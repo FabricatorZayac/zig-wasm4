@@ -59,7 +59,6 @@ export fn update() void {
     }
 
     const mvmt = getMovement();
-
     origin = origin.add(mvmt);
 
     vector = vector.transform(Mat2.rotate(rotation_rad));
@@ -69,7 +68,7 @@ export fn update() void {
 
     if (started) {
         println(120, "rad/s:{d:.2}", .{rotation_rad * 60});
-        println(130, "O({d},{d})", .{ line.center().x, line.center().y });
+        println(130, "O({d:.0},{d:.0})", .{ origin.x, origin.y });
         println(140, "len:{d:.2}", .{vector.length()});
         println(150, "mvmt:{d:.2},{d:.2}", .{ mvmt.x, mvmt.y });
     }

@@ -1,0 +1,21 @@
+name: Deploy wasm4 game
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.11.0
+      - run: zig build
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install wasm4
+      - run: ~/node_modules/wasm4/cli.js
