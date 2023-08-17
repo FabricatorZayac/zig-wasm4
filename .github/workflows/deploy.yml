@@ -18,4 +18,4 @@ jobs:
         with:
           node-version: 18
       - run: npm install wasm4
-      - run: ~/node_modules/wasm4/cli.js
+      - run: ~/node_modules/wasm4/cli.js bundle zig-out/lib/cart.wasm --title speen --html speen.html --description "vector demo"
