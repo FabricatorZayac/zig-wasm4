@@ -8,14 +8,28 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: goto-bus-stop/setup-zig@v2
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Set up zig
+        uses: goto-bus-stop/setup-zig@v2
         with:
           version: 0.11.0
       - run: zig build
 
-      - uses: actions/setup-node@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm install wasm4
-      - run: node_modules/wasm4/cli.js bundle zig-out/lib/cart.wasm --title speen --html speen.html --description "vector demo"
+      - name: Install w4
+        run: npm install wasm4
+      - name: Bundle cart into html
+        run: node_modules/wasm4/cli.js bundle zig-out/lib/cart.wasm --title speen --html index.html --description "vector demo"
+
+      - name: Configure pages
+        uses: actions/configure-pages@v3
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: '.'
+      - name: Deploy pages
+        uses: actions/deploy-pages@v2
