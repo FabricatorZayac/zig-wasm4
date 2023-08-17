@@ -1,16 +1,6 @@
 const w4 = @import("wasm4.zig");
 const std = @import("std");
 
-fn pow(x: anytype, y: u32) @TypeOf(x) {
-    if (x == 0) return 0;
-    if (y == 0) return 1;
-    var x1 = x;
-    for (1..y) |_| {
-        x1 = x1 * x;
-    }
-    return x1;
-}
-
 const Mat2 = struct {
     mt: [2][2]f32,
 
@@ -144,7 +134,7 @@ fn println(
 }
 
 var vector = Vec2.create(50, 0);
-var origin_pt = Vec2.create(50, 50);
+var origin_pt = Vec2.create(160 / 2, 160 / 2);
 var rotation_rad: f32 = 0;
 
 var started: bool = false;
