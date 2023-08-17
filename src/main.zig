@@ -60,9 +60,13 @@ const Vec2 = struct {
     }
 
     pub fn normal(self: Self) Self {
+        var x = self.x / self.length();
+        var y = self.y / self.length();
+        if (std.math.isNan(x)) x = 0;
+        if (std.math.isNan(y)) y = 0;
         return .{
-            .x = self.x / self.length(),
-            .y = self.y / self.length(),
+            .x = x,
+            .y = y,
         };
     }
 
@@ -72,47 +76,41 @@ const Vec2 = struct {
             .y = self.x * matrix.mt[0][1] + self.y * matrix.mt[1][1],
         };
     }
-};
 
-const Point = struct {
-    x: i32,
-    y: i32,
-
-    const Self = @This();
-
-    pub fn create(x: i32, y: i32) Self {
-        return .{ .x = x, .y = y };
+    pub fn add(self: Self, other: Self) Self {
+        return .{
+            .x = self.x + other.x,
+            .y = self.y + other.y,
+        };
     }
 };
 
 const Line = struct {
-    p0: Point,
-    p1: Point,
+    p0: Vec2,
+    p1: Vec2,
 
     const Self = @This();
 
-    pub fn fromPoints(p0: Point, p1: Point) Self {
-        return .{
-            .p0 = p0,
-            .p1 = p1,
-        };
-    }
-
-    pub fn fromVec2(origin: Point, vec: Vec2) Self {
+    pub fn fromVec2(origin: Vec2, vec: Vec2) Self {
         return .{
             .p0 = origin,
-            .p1 = Point.create(
-                origin.x + @as(i32, @intFromFloat(vec.x)),
-                origin.y + @as(i32, @intFromFloat(vec.y)),
-            ),
+            .p1 = Vec2{
+                .x = origin.x + vec.x,
+                .y = origin.y + vec.y,
+            },
         };
     }
 
     pub fn draw(self: Self) void {
-        w4.line(self.p0.x, self.p0.y, self.p1.x, self.p1.y);
+        w4.line(
+            @intFromFloat(self.p0.x),
+            @intFromFloat(self.p0.y),
+            @intFromFloat(self.p1.x),
+            @intFromFloat(self.p1.y),
+        );
     }
 
-    pub fn center(self: Self) Point {
+    pub fn center(self: Self) Vec2 {
         return .{
             .x = @divTrunc(self.p0.x + self.p1.x, 2),
             .y = @divTrunc(self.p0.y + self.p1.y, 2),
@@ -122,12 +120,12 @@ const Line = struct {
     pub fn translate(self: Self, vec: Vec2) Self {
         return .{
             .p0 = .{
-                .x = self.p0.x + @as(i32, @intFromFloat(vec.x)),
-                .y = self.p0.y + @as(i32, @intFromFloat(vec.y)),
+                .x = self.p0.x + vec.x,
+                .y = self.p0.y + vec.y,
             },
             .p1 = .{
-                .x = self.p1.x + @as(i32, @intFromFloat(vec.x)),
-                .y = self.p1.y + @as(i32, @intFromFloat(vec.y)),
+                .x = self.p1.x + vec.x,
+                .y = self.p1.y + vec.y,
             },
         };
     }
@@ -142,22 +140,55 @@ fn println(
     var stream = std.io.fixedBufferStream(&buf);
 
     std.fmt.format(stream.writer(), fmt, args) catch unreachable;
-    w4.text(stream.getWritten(), 10, y);
+    w4.text(stream.getWritten(), 3, y);
 }
 
 var vector = Vec2.create(50, 0);
+var origin_pt = Vec2.create(50, 50);
+var rotation_rad: f32 = 0;
+
+var started: bool = false;
 
 export fn update() void {
-    println(90, "len:{d:.2}", .{vector.length()});
+    if (!started) println(2, "Press z/x/arrows", .{});
 
-    vector = vector.transform(Mat2.rotate(0.04));
+    const gamepad = w4.GAMEPAD1.*;
 
-    const line = Line.fromVec2(Point.create(50, 50), vector)
+    if (gamepad != 0) started = true;
+
+    var movement_vec = Vec2{ .x = 0, .y = 0 };
+    if (gamepad & w4.BUTTON_RIGHT != 0) {
+        movement_vec.x += 1;
+    }
+    if (gamepad & w4.BUTTON_LEFT != 0) {
+        movement_vec.x -= 1;
+    }
+    if (gamepad & w4.BUTTON_UP != 0) {
+        movement_vec.y -= 1;
+    }
+    if (gamepad & w4.BUTTON_DOWN != 0) {
+        movement_vec.y += 1;
+    }
+    if (gamepad & w4.BUTTON_1 != 0) {
+        rotation_rad += 0.002;
+    }
+    if (gamepad & w4.BUTTON_2 != 0) {
+        rotation_rad -= 0.002;
+    }
+
+    origin_pt = origin_pt.add(movement_vec.normal());
+
+    vector = vector.transform(Mat2.rotate(rotation_rad));
+    const line = Line.fromVec2(origin_pt, vector)
         .translate(Vec2.create(vector.x / -2, vector.y / -2));
     line.draw();
 
-    println(100, "x:{d:.2},y:{d:.2}", .{ vector.x, vector.y });
-    println(110, "O({},{})", .{ line.center().x, line.center().y });
+    if (started) {
+        println(120, "rad/s:{d:.2}", .{rotation_rad * 60});
+        println(130, "O({d},{d})", .{ line.center().x, line.center().y });
+        println(140, "len:{d:.2}", .{vector.length()});
+        println(150, "mvmt:{d:.2},{d:.2}", .{ movement_vec.normal().x, movement_vec.normal().y });
+    }
 }
 
 export fn start() void {
