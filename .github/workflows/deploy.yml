@@ -21,12 +21,12 @@ jobs:
           version: 0.11.0
       - run: zig build
 
-      - name: Set up node
-        uses: actions/setup-node@v3
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
+          version: 0.8.0
       - name: Install w4
-        run: npm install wasm4
+        run: bun install wasm4
       - name: Bundle cart into html
         run: node_modules/wasm4/cli.js bundle zig-out/lib/cart.wasm --title speen --html index.html --description "vector demo"
 

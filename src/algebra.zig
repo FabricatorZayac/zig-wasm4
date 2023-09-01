@@ -6,21 +6,21 @@ pub const Mat2 = struct {
     const Self = @This();
 
     pub fn identity() Self {
-        return .{ .mt = .{
+        return Self{ .mt = .{
             .{ 1, 0 },
             .{ 0, 1 },
         } };
     }
 
     pub fn scale(a: f32) Self {
-        return .{ .mt = .{
+        return Self{ .mt = .{
             .{ a, 0 },
             .{ 0, a },
         } };
     }
 
     pub fn rotate(angle_rad: f32) Self {
-        return .{ .mt = .{
+        return Self{ .mt = .{
             .{ @cos(angle_rad), -@sin(angle_rad) },
             .{ @sin(angle_rad), @cos(angle_rad) },
         } };
@@ -34,7 +34,7 @@ pub const Vec2 = struct {
     const Self = @This();
 
     pub fn create(x: f32, y: f32) Self {
-        return .{ .x = x, .y = y };
+        return Self{ .x = x, .y = y };
     }
 
     pub fn length(self: Self) f32 {
